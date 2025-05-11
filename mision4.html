@@ -58,6 +58,19 @@
             to { opacity: 1; }
         }
 
+        .final-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 32px;
+            color: #0ff;
+            text-align: center;
+            display: none;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+
         .planet-select {
             display: flex;
             gap: 40px;
@@ -68,6 +81,7 @@
             cursor: pointer;
             text-align: center;
             transition: box-shadow 0.3s ease-in-out;
+            position: relative;
         }
 
         .planet img {
@@ -157,216 +171,183 @@
         .planet.completed {
             box-shadow: 0 0 10px 5px #c05769;
         }
+
+        .halo {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 220px;
+            height: 220px;
+            margin-left: -110px;
+            margin-top: -110px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0,255,255,0.5) 0%, transparent 70%);
+            animation: pulse 2s infinite ease-in-out;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.6; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.6; }
+        }
+
     </style>
 </head>
 <body>
 
 <canvas class="stars"></canvas>
 
-    <div id="game-interface">
-        <div class="section active" id="zona1">
-            <h2>Mundo Final: Núcleo Galáctico</h2>
-            <p>Has llegado al núcleo del universo. Dos submundos mantienen el caos. Selecciona un planeta para entrar y restaurar la lógica universal.</p>
+<div id="game-interface">
+    <div class="section active" id="zona1">
+        <h2>Mundo Final: Núcleo Galáctico</h2>
+        <p>Has llegado al núcleo del universo. Un submundo mantiene el caos. Completa la misión para restaurar la lógica universal.</p>
 
-            <div class="planet-select">
-                <div class="planet planet1" id="planeta1" onclick="siguienteZona(2)">
-                    <img src="./Planeta1.png" alt="Planeta 1">
-                    <div class="planet-name">Submundo 1</div>
-                    <div class="planet-tagline">¡Completa la frase sobre conjuntos!</div>
-                </div>
-
-                <div class="planet planet2" id="planeta2" onclick="siguienteZona(3)">
-                    <img src="./Planeta2.png" alt="Planeta 2">
-                    <div class="planet-name">Submundo 2</div>
-                    <div class="planet-tagline">¡Lenguaje y comunicación!</div>
-                </div>
+        <div class="planet-select">
+            <div class="planet planet1" id="planeta1" onclick="siguienteZona(2)">
+                <img src="./Planeta1.png" alt="Planeta 1">
+                <div class="planet-name">Submundo 1</div>
+                <div class="planet-tagline">¡Completa la frase sobre conjuntos!</div>
             </div>
-            <button id="boton-logrado" style="display: none; margin-top: 30px;" onclick="finalizarJuego()">¡Logrado!</button>
         </div>
-
-        <div class="section" id="zona2">
-            <h2>Submundo 1: Completa la frase</h2>
-            <p class="frase">
-                El conjunto <span class="dropzone" data-answer="A">_______</span> es un subconjunto de
-                <span class="dropzone" data-answer="B">_______</span> porque todo elemento de
-                <span class="dropzone" data-answer="A">_______</span> es también un elemento de
-                <span class="dropzone" data-answer="B">_______</span>.
-            </p>
-
-            <div class="palabras">
-                <div class="palabra" draggable="true">A</div>
-                <div class="palabra" draggable="true">B</div>
-                <div class="palabra" draggable="true">A</div>
-                <div class="palabra" draggable="true">B</div>
-                <div class="palabra" draggable="true">subconjunto</div>
-                <div class="palabra" draggable="true">elemento</div>
-                <div class="palabra" draggable="true">conjunto</div>
-            </div>
-
-            <button onclick="verificar(1)">Verificar</button>
-            <button onclick="siguienteZona(1)">Regresar</button>
-        </div>
-
-        <div class="section" id="zona3">
-            <h2>Submundo 2: Teoría de Conjuntos</h2>
-            <p class="frase">
-                La <span class="dropzone" data-answer="unión">_______</span> de dos conjuntos contiene los
-                <span class="dropzone" data-answer="elementos">_______</span> que están en el primero o en el
-                <span class="dropzone" data-answer="segundo">_______</span>, o en <span class="dropzone" data-answer="ambos">_______</span>. Su símbolo es <span class="dropzone" data-answer="∪">_______</span>.
-            </p>
-
-            <div class="palabras">
-                <div class="palabra" draggable="true">unión</div>
-                <div class="palabra" draggable="true">intersección</div>
-                <div class="palabra" draggable="true">elementos</div>
-                <div class="palabra" draggable="true">subconjuntos</div>
-                <div class="palabra" draggable="true">segundo</div>
-                <div class="palabra" draggable="true">primero</div>
-                <div class="palabra" draggable="true">ambos</div>
-                <div class="palabra" draggable="true">ninguno</div>
-                <div class="palabra" draggable="true">∪</div>
-                <div class="palabra" draggable="true">∩</div>
-            </div>
-
-            <button onclick="verificar(2)">Verificar</button>
-            <button onclick="siguienteZona(1)">Regresar</button>
-        </div>
+        <button id="boton-logrado" style="display: none; margin-top: 30px;" onclick="finalizarJuego()">¡Logrado!</button>
     </div>
 
-    <script>
-        function siguienteZona(zona) {
-            document.querySelectorAll('.section').forEach(sec => {
-                sec.classList.remove('active');
-                sec.style.opacity = '0';
-            });
+    <div class="section" id="zona2">
+        <h2>Submundo 1: Completa la frase</h2>
+        <p class="frase">
+            El conjunto <span class="dropzone" data-answer="A">_______</span> es un subconjunto de
+            <span class="dropzone" data-answer="B">_______</span> porque todo elemento de
+            <span class="dropzone" data-answer="A">_______</span> es también un elemento de
+            <span class="dropzone" data-answer="B">_______</span>.
+        </p>
 
-            setTimeout(() => {
-                document.querySelectorAll('.section').forEach(sec => {
-                    sec.style.visibility = 'hidden';
-                });
+        <div class="palabras">
+            <div class="palabra" draggable="true" id="A">A</div>
+            <div class="palabra" draggable="true" id="B">B</div>
+            <div class="palabra" draggable="true" id="subconjunto">subconjunto</div>
+            <div class="palabra" draggable="true" id="elemento">elemento</div>
+            <div class="palabra" draggable="true" id="conjunto">conjunto</div>
+        </div>
 
-                const nextZone = document.getElementById(`zona${zona}`);
-                setTimeout(() => {
-                    nextZone.style.visibility = 'visible';
-                    nextZone.style.opacity = '1';
-                    nextZone.classList.add('active');
-                }, 50);
-            }, 500);
-        }
+        <button onclick="verificar(2)">Verificar</button>
+        <button onclick="siguienteZona(1)">Regresar</button>
+    </div>
+</div>
 
-        let draggingElement = null;
-        let originalParent = null;
-        let originalPosition = null;
+<div class="final-message" id="final-message">¡Felicidades! Has completado todas las misiones.</div>
 
-        function dragStart(event) {
-            draggingElement = event.target;
-            draggingElement.classList.add('dragging');
-            originalParent = draggingElement.parentNode;
-            originalPosition = {
-                parent: originalParent,
-                nextSibling: draggingElement.nextSibling
-            };
-        }
-
-        function dragEnd(event) {
-            draggingElement.classList.remove('dragging');
-            draggingElement = null;
-            originalParent = null;
-            originalPosition = null;
-        }
-
-        document.querySelectorAll('.palabra').forEach(palabra => {
-            palabra.addEventListener('dragstart', dragStart);
-            palabra.addEventListener('dragend', dragEnd);
+<script>
+    // Función para manejar el dragstart
+    const palabras = document.querySelectorAll('.palabra');
+    palabras.forEach(palabra => {
+        palabra.addEventListener('dragstart', (e) => {
+            e.target.classList.add('dragging');
         });
 
-        document.querySelectorAll('.dropzone').forEach(dropzone => {
-            dropzone.addEventListener('dragover', e => e.preventDefault());
-            dropzone.addEventListener('drop', e => {
-                e.preventDefault();
-                if (!draggingElement) return;
+        palabra.addEventListener('dragend', (e) => {
+            e.target.classList.remove('dragging');
+        });
+    });
 
-                // Si ya hay una palabra en el dropzone, la devolvemos a su lugar
-                if (dropzone.firstChild && dropzone.firstChild.classList && dropzone.firstChild.classList.contains('placed-word')) {
-                    const placedWord = dropzone.firstChild;
-                    if (placedWord.originalPosition) {
-                        if (placedWord.originalPosition.nextSibling) {
-                            placedWord.originalPosition.parent.insertBefore(placedWord, placedWord.originalPosition.nextSibling);
-                        } else {
-                            placedWord.originalPosition.parent.appendChild(placedWord);
-                        }
-                        placedWord.style.display = 'block';
-                        delete placedWord.originalPosition;
-                    } else {
-                        originalParent.insertBefore(placedWord, originalPosition.nextSibling);
-                        placedWord.style.display = 'block';
-                    }
-                    dropzone.innerText = '_______';
-                    dropzone.style.color = '#0ff';
-                    const existingRemoveButton = dropzone.querySelector('.remove');
-                    if (existingRemoveButton) {
-                        existingRemoveButton.removeEventListener('click', handleRemove);
-                        existingRemoveButton.remove();
-                    }
-                }
-
-                dropzone.innerText = '';
-                dropzone.style.color = '';
-                draggingElement.style.display = 'block';
-                dropzone.appendChild(draggingElement);
-                draggingElement.classList.add('placed-word');
-                draggingElement.originalPosition = originalPosition;
-
-                // Mostrar la X para eliminar la palabra
-                let removeButton = document.createElement('span');
-                removeButton.textContent = 'X';
-                removeButton.classList.add('remove');
-                removeButton.addEventListener('click', handleRemove);
-                dropzone.appendChild(removeButton);
-            });
+    // Función para manejar el dragover
+    const dropzones = document.querySelectorAll('.dropzone');
+    dropzones.forEach(dropzone => {
+        dropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
         });
 
-        function handleRemove(event) {
-            const removeButton = event.target;
-            const dropzone = removeButton.parentNode;
-            const placedWord = dropzone.firstChild;
-
-            if (placedWord && placedWord.classList.contains('placed-word')) {
-                if (placedWord.originalPosition) {
-                    if (placedWord.originalPosition.nextSibling) {
-                        placedWord.originalPosition.parent.insertBefore(placedWord, placedWord.originalPosition.nextSibling);
-                    } else {
-                        placedWord.originalPosition.parent.appendChild(placedWord);
-                    }
-                    delete placedWord.originalPosition;
-                } else if (originalPosition) {
-                    originalPosition.parent.insertBefore(placedWord, originalPosition.nextSibling);
-                }
-                dropzone.innerText = '_______';
-                dropzone.style.color = '#0ff';
-                dropzone.removeChild(removeButton);
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const draggedWord = document.querySelector('.dragging');
+            if (draggedWord) {
+                dropzone.textContent = draggedWord.textContent;
+                dropzone.classList.add('filled');
             }
-        }
+        });
+    });
 
-        function verificar(submundo) {
-            let correcta = true;
-            document.querySelectorAll('.dropzone').forEach(dropzone => {
-                if (dropzone.firstChild && dropzone.firstChild.classList.contains('placed-word') && dropzone.getAttribute('data-answer') !== dropzone.firstChild.innerText) {
-                    correcta = false;
-                    dropzone.style.backgroundColor = 'red';
-                }
-            });
-            if (correcta) {
-                alert('¡Correcto!');
-                document.getElementById('boton-logrado').style.display = 'inline-block';
-            } else {
-                alert('¡Incorrecto! Vuelve a intentar.');
+    function siguienteZona(zona) {
+        document.querySelectorAll('.section').forEach(sec => {
+            sec.classList.remove('active');
+            sec.style.opacity = '0';
+            sec.style.visibility = 'hidden';
+        });
+
+        setTimeout(() => {
+            const nextZone = document.getElementById(`zona${zona}`);
+            nextZone.style.visibility = 'visible';
+            nextZone.style.opacity = '1';
+            nextZone.classList.add('active');
+        }, 500);
+    }
+
+    function verificar(zona) {
+        let correcta = true;
+        const dropzones = document.querySelectorAll(`#zona${zona} .dropzone`);
+
+        dropzones.forEach(dropzone => {
+            dropzone.style.backgroundColor = '';
+            const palabraColocada = dropzone.textContent.trim();
+            const respuestaCorrecta = dropzone.getAttribute('data-answer').trim();
+
+            if (palabraColocada !== respuestaCorrecta) {
+                correcta = false;
+                dropzone.style.backgroundColor = 'red';
             }
-        }
+        });
 
-        function finalizarJuego() {
-            alert('¡Misión completada!');
+        if (correcta) {
+            alert('¡Correcto!');
+            document.getElementById('boton-logrado').style.display = 'inline-block';
+        } else {
+            alert('¡Incorrecto! Vuelve a intentar.');
         }
-    </script>
+    }
+
+    function finalizarJuego() {
+        document.getElementById('game-interface').style.opacity = '0';
+        setTimeout(() => {
+            document.getElementById('final-message').style.display = 'block';
+            document.getElementById('final-message').style.opacity = '1';
+        }, 1000);
+    }
+</script>
+
+<script>
+    // Fondo estrellado animado en canvas
+    const canvas = document.querySelector('.stars');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    function createStar() {
+        return {
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            size: Math.random() *1.5 + 0.5,
+            speed: Math.random() * 0.5 + 0.5
+        };
+    }
+
+    const stars = Array.from({ length: 150 }, createStar);
+
+    function drawStars() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        stars.forEach(star => {
+            ctx.beginPath();
+            ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+            ctx.fillStyle = 'white'
+            ctx.fill();
+            star.y += star.speed;
+            if (star.y > canvas.height) star.y = 0;
+        });
+        requestAnimationFrame(drawStars);
+    }
+
+    drawStars();
+</script>
+
 </body>
 </html>
