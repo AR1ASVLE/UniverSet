@@ -187,7 +187,6 @@
 <body>
   <div class="title-mision1">
     <h1>¡Clasifica los elementos estelares!</h1>
-
   </div>
   <div id="game-area">
     <div class="item" draggable="true" data-value="1" style="top: 5%; left: 10%;">1</div>
@@ -207,37 +206,13 @@
     </div>
   </div>
 
-  <div style="
-  position: fixed;
-  bottom: 30px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 5;
-  text-align: center;
-">
-  <button id="check-button" style="
-    background: #00f7ff;
-    color: #000;
-    font-family: 'Orbitron', sans-serif;
-    font-weight: bold;
-    font-size: 16px;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 10px;
-    box-shadow: 0 0 10px #00f7ff;
-    cursor: pointer;
-  ">Logrado</button>
-</div>
+  <div style="position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 5; text-align: center;">
+    <button id="check-button" style="background: #00f7ff; color: #000; font-family: 'Orbitron', sans-serif; font-weight: bold; font-size: 16px; padding: 10px 20px; border: none; border-radius: 10px; box-shadow: 0 0 10px #00f7ff; cursor: pointer;">Logrado</button>
+  </div>
 
   <!-- Mensaje animado -->
   <div id="level-up-message" class="level-up-message">
     <span id="typing-text"></span>
-  </div>
-
-  <!-- Contenedor de la misión 2 -->
-  <div id="mission-2-container">
-    <h2 style="color:#00f7ff;">🚀 Misión 2: ¡Nueva etapa desbloqueada!</h2>
-    <iframe src="mision2.html"></iframe>
   </div>
 
   <canvas id="stars-canvas"></canvas>
@@ -367,22 +342,15 @@
       if (existing) existing.remove();
 
       if (isComplete) {
-  document.querySelectorAll(".item").forEach(item => item.style.display = "none");
-  document.querySelector(".set-zone").style.display = "none";
-  document.querySelector("h1").style.display = "none";
-  document.getElementById("check-button").style.display = "none";
-
-  // Mostrar mensaje simple de "Juego logrado"
-  const successMessage = document.createElement("div");
-  successMessage.className = "center-message";
-  successMessage.innerText = "Misión lograda";
-  gameArea.appendChild(successMessage);
-
-  // Ir a misión 2 después de 2 segundos
-  setTimeout(() => {
-    window.location.href = "mision2.html";
-  }, 4000);
-}
+        document.querySelectorAll(".item").forEach(item => item.style.display = "none");
+        document.querySelector(".set-zone").style.display = "none";
+        document.querySelector(".level-up-message").style.display = "block";
+        typeMessage("¡Felicidades! Has completado la misión. Sigue explorando el espacio.", "typing-text", () => {
+          document.getElementById("mission-2-container").style.display = "block";
+        });
+      } else {
+        alert("Aún no has clasificado correctamente todos los elementos.");
+      }
     });
   </script>
 </body>
