@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Añadir para mejorar la escala en móviles -->
+    <title>El Desafío de Conjuntos</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: 'Orbitron', sans-serif;
+            background: radial-gradient(circle, #0A0026 0%, #120038 50%, #000010 100%);
+            color: #00f7ff;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding-top: 10px;
+        }
+
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 20px;
+            opacity: 0;
+            animation: fadeIn 1s forwards;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: scale(0.5); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        h1 {
+            font-size: 6vw; /* Tamaño de fuente relativo */
+            color: #ffdd00;
+            text-shadow: 0 0 10px #ffaa00, 0 0 20px #ff8800;
+            margin-bottom: 15px;
+            animation: slideIn 2s ease-out;
+            margin-top: -30px;
+        }
+
+        @keyframes slideIn {
+            0% { transform: translateY(-30px); }
+            100% { transform: translateY(0); }
+        }
+
+        #historia-mision {
+            font-size: 4vw;
+            color: #ffffff;
+            margin-bottom: 50px;
+            text-align: center;
+        }
+
+        p {
+            font-size: 3vw;
+            color: #ffffff;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            animation: fadeInText 2s ease-out;
+        }
+
+        @keyframes fadeInText {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        .acertijo-box {
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 5vw;
+            border-radius: 15px;
+            margin: 5vw auto;
+            max-width: 90%;
+            color: #ffffff;
+            box-shadow: 0 0 20px rgba(0, 255, 204, 0.3);
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        h2 {
+            font-size: 5vw;
+            color: #00ffcc;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+
+        #pregunta {
+            font-size: 4vw;
+            margin-bottom: 15px;
+        }
+
+        .opciones {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .opcion {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        input[type="radio"] {
+            appearance: none;
+            width: 6vw;
+            height: 6vw;
+            border: 2px solid #00ffcc;
+            border-radius: 50%;
+            margin-right: 5%;
+            outline: none;
+            cursor: pointer;
+            position: relative;
+        }
+
+        input[type="radio"]:checked::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: block;
+            width: 3vw;
+            height: 3vw;
+            border-radius: 50%;
+            background-color: #00f7ff;
+        }
+
+        label {
+            font-size: 4vw;
+            color: #ffffff;
+            cursor: pointer;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 4vw;
+            background-color: #00f7ff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: "Orbitron", sans-serif;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        button:hover {
+            background-color: #33ffff;
+            transform: scale(1.1);
+        }
+
+        #feedback {
+            margin-top: 20px;
+            font-size: 4vw;
+            color: #00ffcc;
+            opacity: 0;
+            animation: fadeInFeedback 2s ease-out;
+        }
+
+        @keyframes fadeInFeedback {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        .mission-complete {
+            margin-top: 30px;
+            display: none;
+            opacity: 0;
+            animation: fadeInFeedback 2s ease-out forwards;
+        }
+
+        .next-btn {
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 8vw;
+            }
+
+            #historia-mision {
+                font-size: 4vw;
+            }
+
+            .acertijo-box {
+                padding: 10vw;
+            }
+
+            #pregunta {
+                font-size: 5vw;
+            }
+
+            button {
+                font-size: 5vw;
+            }
+        }
+    </style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div class="container">
+    <h1>🧠 El Desafío de Conjuntos</h1>
+    <p id="historia-mision">En las profundidades del ciberespacio, una anomalía de conjuntos lógicos amenaza con desestabilizar la red. Tu misión, agente, es resolver los enigmas que protegen el núcleo de esta perturbación. Cada respuesta correcta nos acerca a restaurar el equilibrio digital.</p>
+    <div class="acertijo-box" id="acertijo-actual">
+        <h2>Acertijo <span id="acertijo-numero">1</span></h2>
+        <p id="pregunta"></p>
+        <div class="opciones" id="opciones-container"></div>
+        <button onclick="verificarRespuesta()">Verificar</button>
+        <p id="feedback"></p>
+    </div>
+    <div class="mission-complete" id="nextMission">
+        <p>¡Correcto! Preparándote para el siguiente nivel...</p>
+        <button class="next-btn" onclick="siguienteAcertijo()">Siguiente Acertijo</button>
+    </div>
+</div>
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Añadir para mejorar la escala en móviles -->
+    <title>El Desafío de Conjuntos</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: 'Orbitron', sans-serif;
+            background: radial-gradient(circle, #0A0026 0%, #120038 50%, #000010 100%);
+            color: #00f7ff;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding-top: 10px;
+        }
+
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 20px;
+            opacity: 0;
+            animation: fadeIn 1s forwards;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: scale(0.5); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        h1 {
+            font-size: 6vw; /* Tamaño de fuente relativo */
+            color: #ffdd00;
+            text-shadow: 0 0 10px #ffaa00, 0 0 20px #ff8800;
+            margin-bottom: 15px;
+            animation: slideIn 2s ease-out;
+            margin-top: -30px;
+        }
+
+        @keyframes slideIn {
+            0% { transform: translateY(-30px); }
+            100% { transform: translateY(0); }
+        }
+
+        #historia-mision {
+            font-size: 4vw;
+            color: #ffffff;
+            margin-bottom: 50px;
+            text-align: center;
+        }
+
+        p {
+            font-size: 3vw;
+            color: #ffffff;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            animation: fadeInText 2s ease-out;
+        }
+
+        @keyframes fadeInText {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        .acertijo-box {
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 5vw;
+            border-radius: 15px;
+            margin: 5vw auto;
+            max-width: 90%;
+            color: #ffffff;
+            box-shadow: 0 0 20px rgba(0, 255, 204, 0.3);
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        h2 {
+            font-size: 5vw;
+            color: #00ffcc;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+
+        #pregunta {
+            font-size: 4vw;
+            margin-bottom: 15px;
+        }
+
+        .opciones {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .opcion {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        input[type="radio"] {
+            appearance: none;
+            width: 6vw;
+            height: 6vw;
+            border: 2px solid #00ffcc;
+            border-radius: 50%;
+            margin-right: 5%;
+            outline: none;
+            cursor: pointer;
+            position: relative;
+        }
+
+        input[type="radio"]:checked::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: block;
+            width: 3vw;
+            height: 3vw;
+            border-radius: 50%;
+            background-color: #00f7ff;
+        }
+
+        label {
+            font-size: 4vw;
+            color: #ffffff;
+            cursor: pointer;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 4vw;
+            background-color: #00f7ff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: "Orbitron", sans-serif;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        button:hover {
+            background-color: #33ffff;
+            transform: scale(1.1);
+        }
+
+        #feedback {
+            margin-top: 20px;
+            font-size: 4vw;
+            color: #00ffcc;
+            opacity: 0;
+            animation: fadeInFeedback 2s ease-out;
+        }
+
+        @keyframes fadeInFeedback {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        .mission-complete {
+            margin-top: 30px;
+            display: none;
+            opacity: 0;
+            animation: fadeInFeedback 2s ease-out forwards;
+        }
+
+        .next-btn {
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 8vw;
+            }
+
+            #historia-mision {
+                font-size: 4vw;
+            }
+
+            .acertijo-box {
+                padding: 10vw;
+            }
+
+            #pregunta {
+                font-size: 5vw;
+            }
+
+            button {
+                font-size: 5vw;
+            }
+        }
+    </style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div class="container">
+    <h1>🧠 El Desafío de Conjuntos</h1>
+    <p id="historia-mision">En las profundidades del ciberespacio, una anomalía de conjuntos lógicos amenaza con desestabilizar la red. Tu misión, agente, es resolver los enigmas que protegen el núcleo de esta perturbación. Cada respuesta correcta nos acerca a restaurar el equilibrio digital.</p>
+    <div class="acertijo-box" id="acertijo-actual">
+        <h2>Acertijo <span id="acertijo-numero">1</span></h2>
+        <p id="pregunta"></p>
+        <div class="opciones" id="opciones-container"></div>
+        <button onclick="verificarRespuesta()">Verificar</button>
+        <p id="feedback"></p>
+    </div>
+    <div class="mission-complete" id="nextMission">
+        <p>¡Correcto! Preparándote para el siguiente nivel...</p>
+        <button class="next-btn" onclick="siguienteAcertijo()">Siguiente Acertijo</button>
+    </div>
+</div>
+
+<script>
+    // Fondo animado de estrellas
+    const canvas = document.getElementById("stars");
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const stars = Array.from({ length: 100 }, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size: Math.random() * 2 + 0.5,
+        speed: Math.random() * 1 + 0.5
+    }));
+
+    function animateStars() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        stars.forEach(star => {
+            star.y += star.speed;
+            if (star.y > canvas.height) {
+                star.y = 0;
+                star.x = Math.random() * canvas.width;
+            }
+            ctx.beginPath();
+            ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+            ctx.fillStyle = "white";
+            ctx.fill();
+        });
+        requestAnimationFrame(animateStars);
+    }
+    animateStars();
+
+    // Lógica de los acertijos de teoría de conjuntos
+    const acertijos = [
+        {
+            pregunta: "Si A = {1, 2} y B = {2, 3}, ¿cuál es la unión de A y B (A ∪ B)?",
+            opciones: ["{1, 2}", "{2}", "{1, 2, 3}", "{}"],
+            respuesta: "c"
+        },
+        {
+            pregunta: "Dado el conjunto U = {a, b, c, d} y A = {a, c}, ¿cuál es el complemento de A (A')?",
+            opciones: ["{a, c}", "{a, b, c, d}", "{b, d}", "{}"],
+            respuesta: "c"
+        },
+        {
+            pregunta: "La intersección de dos conjuntos disjuntos siempre es el conjunto...",
+            opciones: ["universal", "vacío", "unitario", "finito"],
+            respuesta: "b"
+        },
+        {
+            pregunta: "Si S = {manzana, pera, banana}, ¿cuántos subconjuntos tiene S?",
+            opciones: ["2", "4", "6", "8"],
+            respuesta: "d"
+        }
+    ];
+
+    let acertijoActual = 0;
+    let respuestaCorrectaRecibida = false; // Bandera para controlar la transición automática
+
+    const preguntaElement = document.getElementById("pregunta");
+    const opcionesContainer = document.getElementById("opciones-container");
+    const feedbackElement = document.getElementById("feedback");
+    const acertijoNumeroElement = document.getElementById("acertijo-numero");
+    const nextMissionDiv = document.getElementById("nextMission");
+    const container = document.querySelector(".container");
+    const acertijoBox = document.getElementById("acertijo-actual");
+    const tituloElement = document.querySelector("h1"); // Seleccionar el título
+    const historiaElement = document.getElementById("historia-mision"); // Seleccionar el texto de la historia
+    const siguienteAcertijoBtn = document.querySelector(".next-btn"); // Seleccionamos el botón
+
+    function mostrarAcertijo() {
+        respuestaCorrectaRecibida = false; // Resetear la bandera al mostrar un nuevo acertijo
+        if (acertijoActual < acertijos.length) {
+            acertijoNumeroElement.textContent = acertijoActual + 1;
+            preguntaElement.textContent = acertijos[acertijoActual].pregunta;
+            opcionesContainer.innerHTML = ""; // Limpiar las opciones anteriores
+            acertijos[acertijoActual].opciones.forEach((opcion, index) => {
+                const letra = String.fromCharCode(97 + index); // a, b, c, d
+                const opcionDiv = document.createElement("div");
+                opcionDiv.classList.add("opcion");
+                const radioBtn = document.createElement("input");
+                radioBtn.type = "radio";
+                radioBtn.name = "respuesta";
+                radioBtn.value = letra;
+                radioBtn.id = `opcion-${letra}`;
+                const labelOpcion = document.createElement("label");
+                labelOpcion.textContent = `${letra.toUpperCase()}. ${opcion}`;
+                labelOpcion.setAttribute("for", `opcion-${letra}`);
+                opcionDiv.appendChild(radioBtn);
+                opcionDiv.appendChild(labelOpcion);
+                opcionesContainer.appendChild(opcionDiv);
+            });
+            feedbackElement.textContent = "";
+            feedbackElement.style.opacity = 0;
+            nextMissionDiv.style.display = "none";
+            acertijoBox.style.opacity = 1; // Asegurarse de que el nuevo acertijo sea visible
+            container.style.animation = `fadeIn 1s forwards`; // Reiniciar animación al mostrar nuevo acertijo
+            container.style.opacity = 1;
+        } else {
+            // Misión completada: Desvanecer título y texto
+            tituloElement.style.transition = "opacity 1s ease-in-out";
+            historiaElement.style.transition = "opacity 1s ease-in-out";
+            tituloElement.style.opacity = 0;
+            historiaElement.style.opacity = 0;
+
+            // Mostrar mensaje de misión completada con fondo de estrellas después de un segundo
+            setTimeout(() => {
+                const mensajeFinal = document.createElement("div");
+                mensajeFinal.textContent = "¡Misión Cumplida!";
+                mensajeFinal.style.position = "fixed";
+                mensajeFinal.style.top = "50%";
+                mensajeFinal.style.left = "50%";
+                mensajeFinal.style.transform = "translate(-50%, -50%)";
+                mensajeFinal.style.fontSize = "36px";
+                mensajeFinal.style.color = "#00ffcc";
+                mensajeFinal.style.fontWeight = "bold";
+                mensajeFinal.style.opacity = 1;
+                mensajeFinal.style.transition = "opacity 1s ease-in-out";
+                mensajeFinal.style.zIndex = 2; // Asegurar que esté por encima del canvas
+                document.body.appendChild(mensajeFinal);
+
+                // Desvanecer el mensaje y redirigir después de un segundo
+                setTimeout(() => {
+                    mensajeFinal.style.opacity = 0;
+                    setTimeout(() => {
+                        window.location.href = "./mision4.html";
+                    }, 1000); // Esperar a que la opacidad llegue a 0 (1 segundo)
+                }, 1000); // Mostrar el mensaje durante 1 segundo
+            }, 1000); // Esperar 1 segundo para que se desvanezca el título y el texto
+        }
+    }
+
+    function verificarRespuesta() {
+        const respuestaSeleccionada = document.querySelector('input[name="respuesta"]:checked');
+        if (respuestaSeleccionada) {
+            const respuestaUsuario = respuestaSeleccionada.value.toLowerCase();
+            const respuestaCorrecta = acertijos[acertijoActual].respuesta.toLowerCase();
+
+            if (respuestaUsuario === respuestaCorrecta) {
+                feedbackElement.textContent = "¡Correcto!";
+                feedbackElement.style.color = "#00ffcc";
+                feedbackElement.style.opacity = 1;
+                respuestaCorrectaRecibida = true; // Establecer la bandera
+                // Desvanecer el acertijo actual y luego mostrar el siguiente
+                acertijoBox.style.opacity = 0;
+                setTimeout(() => {
+                    acertijoActual++;
+                    mostrarAcertijo();
+                }, 500); // Misma duración que la transición CSS
+            } else {
+                feedbackElement.textContent = "¡Incorrecto! Intenta con cuidado.";
+                feedbackElement.style.color = "#ff6600";
+                feedbackElement.style.opacity = 1;
+            }
+        } else {
+            feedbackElement.textContent = "Por favor, selecciona una respuesta.";
+            feedbackElement.style.color = "#ff6600";
+            feedbackElement.style.opacity = 1;
+        }
+    }
+
+    // La función siguienteAcertijo ya no es llamada por un botón directamente en la primera etapa
+    function siguienteAcertijo() {
+        // Esta función ahora solo se usaría si hubiera alguna lógica adicional para el botón
+        // En este caso, la transición es automática al responder correctamente.
+    }
+
+    // Cargar el primer acertijo al inicio
+    mostrarAcertijo();
+</script>
+
+</body>
+</html>
+
+</body>
+</html>

@@ -1,0 +1,384 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Misión Estelar: Conjuntos Galácticos</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      font-family: 'Orbitron', sans-serif;
+      background: radial-gradient(circle, #0A0026 0%, #120038 50%, #000010 100%);
+      color: #00f7ff;
+      overflow: hidden;
+    }
+    canvas#stars-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      display: block;
+    }
+    #story-text {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 80%;
+      max-width: 800px;
+      font-size: 20px;
+      color: #ffdd00;
+      text-shadow: 0 0 10px #ffaa00, 0 0 20px #ff8800;
+      z-index: 10;
+      border-right: 2px solid #ffaa00;
+      animation: blink 0.7s step-end infinite;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      overflow: hidden;
+      opacity: 1;
+      transition: opacity 1s ease-in-out;
+      text-align: center;
+    }
+    #mission-briefing {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: rgba(0, 0, 0, 0.8);
+      padding: 25px;
+      border-radius: 12px;
+      color: #ffcc00;
+      z-index: 50;
+      opacity: 0;
+      transition: opacity 1s ease-in-out;
+      text-align: center;
+    }
+    .briefing-text {
+      font-size: 20px;
+      margin-bottom: 18px;
+    }
+    #activity-container {
+      position: relative;
+      top: 50px;
+      background-color: rgba(0, 0, 0, 0.8);
+      padding: 15px;
+      border-radius: 12px;
+      color: #ffcc00;
+      z-index: 0;
+      opacity: 0;
+      transition: opacity 1s ease-in-out;
+      margin-left: 5vw;
+      margin-right: 5vw;
+      margin-bottom: 2vh;
+      max-width: 90%;
+    }
+    h2 {
+      margin-top: 0;
+      font-size: 24px;
+    }
+    #instruction {
+      font-size: 18px;
+      margin-bottom: 15px;
+    }
+    .element-container {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 25px;
+      flex-wrap: wrap;
+    }
+    .element {
+      width: 70px;
+      height: 70px;
+      border: 3px solid #ffcc00;
+      border-radius: 50%;
+      cursor: grab;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      opacity: 1;
+    }
+    .drop-zone-container {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .drop-zone-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .drop-zone {
+      width: 150px;
+      height: 150px;
+      border: 3px dashed #ffcc00;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 15px;
+    }
+    .drop-zone-label {
+      font-size: 17px;
+      color: #ffcc00;
+      margin-top: 8px;
+      text-align: center;
+    }
+    #feedback {
+      font-size: 20px;
+      color: #ffcc00;
+    }
+    button.mision {
+      border: 2px solid #ffaa00;
+      color: #000000;
+      background: #ffcc00;
+      padding: 16px 32px;
+      cursor: pointer;
+      border-radius: 8px;
+      font-family: "Orbitron", sans-serif;
+      font-size: 18px;
+      transition: background-color 0.3s ease;
+    }
+    button.mision:hover {
+      background-color: #ffdd33;
+    }
+    button.mision:active {
+      background-color: #ffbb00;
+    }
+
+    /* Responsividad */
+    @media (max-width: 768px) {
+      #story-text {
+        font-size: 16px;
+      }
+      #activity-container {
+        margin-left: 2vw;
+        margin-right: 2vw;
+      }
+      .element-container {
+        flex-direction: column;
+        align-items: center;
+      }
+      .drop-zone-container {
+        flex-direction: column;
+      }
+    }
+
+    @media (orientation: landscape) {
+      #story-text {
+        font-size: 22px;
+      }
+      #activity-container {
+        margin-left: 10vw;
+        margin-right: 10vw;
+      }
+    }
+  </style>
+</head>
+<body>
+<canvas id="stars-canvas"></canvas>
+<div id="story-text"></div>
+<div id="mission-briefing">
+  <h2 class="briefing-text">¡ALERTA CÓSMICA!</h2>
+  <p class="briefing-text">Anomalías matemáticas amenazan la estabilidad galáctica.</p>
+  <p class="briefing-text">Tu inmediata intervención es crucial para reorganizar los elementos y restaurar el equilibrio.</p>
+  <button class="mision" onclick="startMission()">¡Activar Protocolo de Misión!</button>
+</div>
+
+<div id="activity-container">
+  <h2>Reorganización Crítica de Conjuntos</h2>
+  <p id="instruction">¡Clasifica y arrastra los elementos a sus zonas seguras!</p>
+  <div class="element-container">
+    <div class="element" draggable="true" id="element1">3</div>
+    <div class="element" draggable="true" id="element2">6</div>
+    <div class="element" draggable="true" id="element3">9</div>
+    <div class="element" draggable="true" id="element4">2</div>
+    <div class="element" draggable="true" id="element5">4</div>
+  </div>
+  <div class="drop-zone-container">
+    <div class="drop-zone-wrapper">
+      <div class="drop-zone" id="multiples-of-3"></div>
+      <div class="drop-zone-label">Múltiplos de 3</div>
+    </div>
+    <div class="drop-zone-wrapper">
+      <div class="drop-zone" id="even-numbers"></div>
+      <div class="drop-zone-label">Números Pares</div>
+    </div>
+    <div class="drop-zone-wrapper">
+      <div class="drop-zone" id="even-and-multiples"></div>
+      <div class="drop-zone-label">Pares y Múltiplos de 3</div>
+    </div>
+  </div>
+  <p id="feedback"></p>
+
+  <!-- Botón Logrado (oculto por defecto) -->
+
+  <div id="completion-button" style="display:none; margin-top: 20px; text-align: center;">
+    <button class="mision" onclick="goToMission3()">¡Logrado!</button>
+  </div>
+</div>
+
+</body>
+</html>
+
+
+  <script>
+  const canvas = document.getElementById('stars-canvas');
+  const ctx = canvas.getContext('2d');
+  const textElement = document.getElementById("story-text");
+  const missionBriefingElement = document.getElementById("mission-briefing");
+  const activityContainerElement = document.getElementById("activity-container");
+  const instructionElement = document.getElementById("instruction");
+  const feedbackElement = document.getElementById("feedback");
+
+  const elementsData = {
+    element1: { value: 3, belongsTo: ["multiples-of-3"] },
+    element2: { value: 6, belongsTo: ["even-and-multiples"] },
+    element3: { value: 9, belongsTo: ["multiples-of-3"] },
+    element4: { value: 2, belongsTo: ["even-numbers"] },
+    element5: { value: 4, belongsTo: ["even-numbers"] }
+  };
+
+  const placedElements = {};
+  let draggedElement = null;
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  // Generar estrellas
+  const stars = Array.from({ length: 100 }, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    size: Math.random() * 2 + 0.5,
+    speed: Math.random() * 1 + 0.2
+  }));
+
+  function animateStars() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    stars.forEach(star => {
+      star.y += star.speed;
+      if (star.y > canvas.height) {
+        star.y = 0;
+        star.x = Math.random() * canvas.width;
+      }
+      ctx.beginPath();
+      ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+      ctx.fillStyle = 'white';
+      ctx.fill();
+    });
+    requestAnimationFrame(animateStars);
+  }
+
+  animateStars();
+
+  const initialStory = `¡ALERTA CÓSMICA!
+Anomalías matemáticas amenazan la estabilidad galáctica.
+Tu inmediata intervención es crucial para reorganizar los elementos y restaurar el equilibrio.`;
+
+  function typeText(element, text, speed, callback) {
+    let i = 0;
+    element.textContent = ''; // limpiar antes de escribir
+    function type() {
+      if (i < text.length) {
+        element.textContent += text.charAt(i);
+        i++;
+        setTimeout(type, speed);
+      } else if (callback) {
+        callback();
+      }
+    }
+    type();
+  }
+
+  function startMission() {
+    missionBriefingElement.style.opacity = 0;
+    setTimeout(() => {
+      missionBriefingElement.style.display = 'none';
+      activityContainerElement.style.opacity = 1;
+      setupDragAndDrop();
+    }, 1000);
+  }
+
+  function setupDragAndDrop() {
+    const elements = document.querySelectorAll('.element');
+    const dropZones = document.querySelectorAll('.drop-zone');
+
+    elements.forEach(el => el.addEventListener('dragstart', dragStart));
+    dropZones.forEach(zone => {
+      zone.addEventListener('dragover', dragOver);
+      zone.addEventListener('drop', drop);
+    });
+  }
+
+  function dragStart(event) {
+    draggedElement = event.target;
+  }
+
+  function dragOver(event) {
+    event.preventDefault();
+  }
+
+  function drop(event) {
+    event.preventDefault();
+    const dropZoneId = event.currentTarget.id;
+    const elementId = draggedElement.id;
+
+    if (!elementsData[elementId]) return;
+
+    const belongs = elementsData[elementId].belongsTo.includes(dropZoneId);
+
+    if (belongs) {
+      if (!placedElements[elementId]) {
+        event.currentTarget.appendChild(draggedElement);
+        draggedElement.draggable = false;
+        placedElements[elementId] = dropZoneId;
+        feedbackElement.textContent = `✅ ¡Correcto! El elemento ${elementsData[elementId].value} ha sido estabilizado.`;
+        checkCompletion();
+      } else {
+        feedbackElement.textContent = `⚠️ Ese número ya ha sido colocado.`;
+      }
+    } else {
+      feedbackElement.textContent = `❌ ¡INCORRECTO! Ese elemento está generando inestabilidad. Intenta de nuevo.`;
+    }
+
+    draggedElement = null;
+  }
+
+  function checkCompletion() {
+    const total = Object.keys(elementsData).length;
+    const placed = Object.keys(placedElements).length;
+
+    if (placed === total) {
+      instructionElement.textContent = "🌌 ¡ESTABILIZACIÓN COMPLETA! La galaxia está a salvo gracias a ti.";
+      const btn = document.getElementById("completion-button");
+      if (btn) btn.style.display = "block";
+    }
+  }
+  document.getElementById("completion-button").addEventListener("click", () => {
+    window.location.href = "./mision3.html";
+  });
+  // Iniciar historia
+  typeText(textElement, initialStory, 30, () => {
+    setTimeout(() => {
+      textElement.style.opacity = 0;
+      setTimeout(() => {
+        textElement.style.display = 'none';
+        missionBriefingElement.style.opacity = 1;
+      }, 1000);
+    }, 2000);
+  });
+</script>
+

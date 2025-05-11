@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>UniverSet: Misión Final</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Orbitron', sans-serif;
+            background: radial-gradient(ellipse at center, #000011 0%, #000000 100%);
+            overflow: hidden;
+            color: white;
+        }
+
+        canvas.stars {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        #game-interface {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .section {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            max-width: 900px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid white;
+            border-radius: 16px;
+            box-shadow: 0 0 20px white;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 1s ease, visibility 0.5s ease;
+        }
+
+        .section.active {
+            display: flex;
+            opacity: 1;
+            visibility: visible;
+            animation: fadeIn 1s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .planet-select {
+            display: flex;
+            gap: 40px;
+            margin-top: 30px;
+        }
+
+        .planet {
+            cursor: pointer;
+            text-align: center;
+            transition: box-shadow 0.3s ease-in-out;
+        }
+
+        .planet img {
+            width: 180px;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .planet-name {
+            margin-top: 10px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .planet-tagline {
+            font-size: 14px;
+            color: #0ff;
+        }
+
+        .frase {
+            margin-top: 20px;
+            font-size: 18px;
+            line-height: 1.6;
+        }
+
+        .dropzone {
+            display: inline-block;
+            min-width: 80px;
+            padding: 4px 8px;
+            margin: 2px;
+            border: 2px dashed #0ff;
+            border-radius: 6px;
+            color: #0ff;
+            text-align: center;
+            position: relative;
+        }
+
+        .dropzone .remove {
+            position: absolute;
+            top: 0;
+            right: 0;
+            font-size: 12px;
+            cursor: pointer;
+            color: red;
+            display: none;
+        }
+
+        .palabras {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 10px;
+        }
+
+        .palabra {
+            padding: 8px 12px;
+            background-color: #0ff;
+            color: #000;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .palabra.dragging {
+            opacity: 0.5;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #0ff;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            color: #000;
+        }
+
+        button:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+
+        .planet.completed {
+            box-shadow: 0 0 10px 5px #c05769;
+        }
+    </style>
+</head>
+<body>
+
+<canvas class="stars"></canvas>
+
+    <div id="game-interface">
+        <div class="section active" id="zona1">
+            <h2>Mundo Final: Núcleo Galáctico</h2>
+            <p>Has llegado al núcleo del universo. Dos submundos mantienen el caos. Selecciona un planeta para entrar y restaurar la lógica universal.</p>
+
+            <div class="planet-select">
+                <div class="planet planet1" id="planeta1" onclick="siguienteZona(2)">
+                    <img src="./Planeta1.png" alt="Planeta 1">
+                    <div class="planet-name">Submundo 1</div>
+                    <div class="planet-tagline">¡Completa la frase sobre conjuntos!</div>
+                </div>
+
+                <div class="planet planet2" id="planeta2" onclick="siguienteZona(3)">
+                    <img src="./Planeta2.png" alt="Planeta 2">
+                    <div class="planet-name">Submundo 2</div>
+                    <div class="planet-tagline">¡Lenguaje y comunicación!</div>
+                </div>
+            </div>
+            <button id="boton-logrado" style="display: none; margin-top: 30px;" onclick="finalizarJuego()">¡Logrado!</button>
+        </div>
+
+        <div class="section" id="zona2">
+            <h2>Submundo 1: Completa la frase</h2>
+            <p class="frase">
+                El conjunto <span class="dropzone" data-answer="A">_______</span> es un subconjunto de
+                <span class="dropzone" data-answer="B">_______</span> porque todo elemento de
+                <span class="dropzone" data-answer="A">_______</span> es también un elemento de
+                <span class="dropzone" data-answer="B">_______</span>.
+            </p>
+
+            <div class="palabras">
+                <div class="palabra" draggable="true">A</div>
+                <div class="palabra" draggable="true">B</div>
+                <div class="palabra" draggable="true">A</div>
+                <div class="palabra" draggable="true">B</div>
+                <div class="palabra" draggable="true">subconjunto</div>
+                <div class="palabra" draggable="true">elemento</div>
+                <div class="palabra" draggable="true">conjunto</div>
+            </div>
+
+            <button onclick="verificar(1)">Verificar</button>
+            <button onclick="siguienteZona(1)">Regresar</button>
+        </div>
+
+        <div class="section" id="zona3">
+            <h2>Submundo 2: Teoría de Conjuntos</h2>
+            <p class="frase">
+                La <span class="dropzone" data-answer="unión">_______</span> de dos conjuntos contiene los
+                <span class="dropzone" data-answer="elementos">_______</span> que están en el primero o en el
+                <span class="dropzone" data-answer="segundo">_______</span>, o en <span class="dropzone" data-answer="ambos">_______</span>. Su símbolo es <span class="dropzone" data-answer="∪">_______</span>.
+            </p>
+
+            <div class="palabras">
+                <div class="palabra" draggable="true">unión</div>
+                <div class="palabra" draggable="true">intersección</div>
+                <div class="palabra" draggable="true">elementos</div>
+                <div class="palabra" draggable="true">subconjuntos</div>
+                <div class="palabra" draggable="true">segundo</div>
+                <div class="palabra" draggable="true">primero</div>
+                <div class="palabra" draggable="true">ambos</div>
+                <div class="palabra" draggable="true">ninguno</div>
+                <div class="palabra" draggable="true">∪</div>
+                <div class="palabra" draggable="true">∩</div>
+            </div>
+
+            <button onclick="verificar(2)">Verificar</button>
+            <button onclick="siguienteZona(1)">Regresar</button>
+        </div>
+    </div>
+
+    <script>
+        function siguienteZona(zona) {
+            document.querySelectorAll('.section').forEach(sec => {
+                sec.classList.remove('active');
+                sec.style.opacity = '0';
+            });
+
+            setTimeout(() => {
+                document.querySelectorAll('.section').forEach(sec => {
+                    sec.style.visibility = 'hidden';
+                });
+
+                const nextZone = document.getElementById(`zona${zona}`);
+                setTimeout(() => {
+                    nextZone.style.visibility = 'visible';
+                    nextZone.style.opacity = '1';
+                    nextZone.classList.add('active');
+                }, 50);
+            }, 500);
+        }
+
+        let draggingElement = null;
+        let originalParent = null;
+        let originalPosition = null;
+
+        function dragStart(event) {
+            draggingElement = event.target;
+            draggingElement.classList.add('dragging');
+            originalParent = draggingElement.parentNode;
+            originalPosition = {
+                parent: originalParent,
+                nextSibling: draggingElement.nextSibling
+            };
+        }
+
+        function dragEnd(event) {
+            draggingElement.classList.remove('dragging');
+            draggingElement = null;
+            originalParent = null;
+            originalPosition = null;
+        }
+
+        document.querySelectorAll('.palabra').forEach(palabra => {
+            palabra.addEventListener('dragstart', dragStart);
+            palabra.addEventListener('dragend', dragEnd);
+        });
+
+        document.querySelectorAll('.dropzone').forEach(dropzone => {
+            dropzone.addEventListener('dragover', e => e.preventDefault());
+            dropzone.addEventListener('drop', e => {
+                e.preventDefault();
+                if (!draggingElement) return;
+
+                // Si ya hay una palabra en el dropzone, la devolvemos a su lugar
+                if (dropzone.firstChild && dropzone.firstChild.classList && dropzone.firstChild.classList.contains('placed-word')) {
+                    const placedWord = dropzone.firstChild;
+                    if (placedWord.originalPosition) {
+                        if (placedWord.originalPosition.nextSibling) {
+                            placedWord.originalPosition.parent.insertBefore(placedWord, placedWord.originalPosition.nextSibling);
+                        } else {
+                            placedWord.originalPosition.parent.appendChild(placedWord);
+                        }
+                        placedWord.style.display = 'block';
+                        delete placedWord.originalPosition;
+                    } else {
+                        originalParent.insertBefore(placedWord, originalPosition.nextSibling);
+                        placedWord.style.display = 'block';
+                    }
+                    dropzone.innerText = '_______';
+                    dropzone.style.color = '#0ff';
+                    const existingRemoveButton = dropzone.querySelector('.remove');
+                    if (existingRemoveButton) {
+                        existingRemoveButton.removeEventListener('click', handleRemove);
+                        existingRemoveButton.remove();
+                    }
+                }
+
+                dropzone.innerText = '';
+                dropzone.style.color = '';
+                draggingElement.style.display = 'block';
+                dropzone.appendChild(draggingElement);
+                draggingElement.classList.add('placed-word');
+                draggingElement.originalPosition = originalPosition;
+
+                // Mostrar la X para eliminar la palabra
+                let removeButton = document.createElement('span');
+                removeButton.textContent = 'X';
+                removeButton.classList.add('remove');
+                removeButton.addEventListener('click', handleRemove);
+                dropzone.appendChild(removeButton);
+            });
+        });
+
+        function handleRemove(event) {
+            const removeButton = event.target;
+            const dropzone = removeButton.parentNode;
+            const placedWord = dropzone.firstChild;
+
+            if (placedWord && placedWord.classList.contains('placed-word')) {
+                if (placedWord.originalPosition) {
+                    if (placedWord.originalPosition.nextSibling) {
+                        placedWord.originalPosition.parent.insertBefore(placedWord, placedWord.originalPosition.nextSibling);
+                    } else {
+                        placedWord.originalPosition.parent.appendChild(placedWord);
+                    }
+                    delete placedWord.originalPosition;
+                } else if (originalPosition) {
+                    originalPosition.parent.insertBefore(placedWord, originalPosition.nextSibling);
+                }
+                dropzone.innerText = '_______';
+                dropzone.style.color = '#0ff';
+                dropzone.removeChild(removeButton);
+            }
+        }
+
+        function verificar(submundo) {
+            let correcta = true;
+            document.querySelectorAll('.dropzone').forEach(dropzone => {
+                if (dropzone.firstChild && dropzone.firstChild.classList.contains('placed-word') && dropzone.getAttribute('data-answer') !== dropzone.firstChild.innerText) {
+                    correcta = false;
+                    dropzone.style.backgroundColor = 'red';
+                }
+            });
+            if (correcta) {
+                alert('¡Correcto!');
+                document.getElementById('boton-logrado').style.display = 'inline-block';
+            } else {
+                alert('¡Incorrecto! Vuelve a intentar.');
+            }
+        }
+
+        function finalizarJuego() {
+            alert('¡Misión completada!');
+        }
+    </script>
+</body>
+</html>

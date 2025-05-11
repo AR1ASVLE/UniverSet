@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recolector Galáctico de Conjuntos</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+
+    body {
+      margin: 0;
+      font-family: 'Orbitron', sans-serif;
+      background: radial-gradient(ellipse at bottom, #0d0d1d 0%, #000010 100%);
+      overflow: hidden;
+      color: #ffffff;
+      height: 100vh;
+    }
+
+    h1 {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 22px;
+      color: #00f7ff;
+      text-shadow: 0 0 8px #00f7ff;
+    }
+
+    #game-area {
+      position: relative;
+      width: 100vw;
+      height: 85vh;
+      z-index: 1;
+    }
+
+    .item {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      background: radial-gradient(circle, #1b9aaa, #144f66);
+      color: #fff;
+      font-size: 14px;
+      font-weight: bold;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 0 20px #00f7ff;
+      cursor: grab;
+      user-select: none;
+      z-index: 2;
+      animation: float 3s infinite ease-in-out, moveAround 10s infinite linear;
+    }
+
+    @keyframes moveAround {
+      0% { transform: translate(0, 0); }
+      25% { transform: translate(5px, -5px); }
+      50% { transform: translate(-5px, 5px); }
+      75% { transform: translate(5px, 5px); }
+      100% { transform: translate(0, 0); }
+    }
+
+    .set-zone {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 200px;
+      height: 200px;
+      border: 4px solid #00f7ff;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      font-size: 14px;
+      background: rgba(0, 247, 255, 0.1);
+      box-shadow: 0 0 25px #00f7ff;
+      color: #00f7ff;
+      padding: 10px;
+      flex-direction: column;
+    }
+
+    .set-zone .inside-items {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 3px;
+      margin-top: 5px;
+    }
+
+    .incorrect-message {
+      position: absolute;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 8px 12px;
+      border-radius: 12px;
+      color: #fff;
+      font-size: 14px;
+      box-shadow: 0 0 10px #ff0044;
+      pointer-events: none;
+      max-width: 200px;
+      z-index: 3;
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    .center-message {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 255, 127, 0.8);
+      padding: 20px;
+      font-size: 24px;
+      font-weight: bold;
+      color: #fff;
+      border-radius: 15px;
+      box-shadow: 0 0 15px #fff;
+      z-index: 10;
+      animation: fadeOut 5s forwards;
+    }
+
+    @keyframes fadeOut {
+      0% { opacity: 1; }
+      100% { opacity: 0; display: none; }
+    }
+
+    .level-up-message {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.7);
+      color: #00f7ff;
+      padding: 20px;
+      font-size: 22px;
+      font-weight: bold;
+      border-radius: 15px;
+      box-shadow: 0 0 15px #fff;
+      z-index: 10;
+      display: none;
+    }
+
+    #mission-2-container {
+      display: none;
+      margin-top: 40px;
+      text-align: center;
+    }
+
+    iframe {
+      width: 90%;
+      height: 600px;
+      border: none;
+      box-shadow: 0 0 20px #00f7ff;
+      border-radius: 15px;
+    }
+
+    #stars-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(ellipse at center, #0d0d1d 0%, #000010 100%);
+    }
+  </style>
+</head>
+<body>
+  <h1>🌌 Recolector Galáctico de Conjuntos 🌌</h1>
+
+  <div id="game-area">
+    <div class="item" draggable="true" data-value="1" style="top: 5%; left: 10%;">1</div>
+    <div class="item" draggable="true" data-value="2" style="top: 20%; left: 85%;">2</div>
+    <div class="item" draggable="true" data-value="3" style="top: 60%; left: 5%;">3</div>
+    <div class="item" draggable="true" data-value="4" style="top: 10%; left: 50%;">4</div>
+    <div class="item" draggable="true" data-value="5" style="top: 80%; left: 30%;">5</div>
+    <div class="item" draggable="true" data-value="6" style="top: 35%; left: 65%;">6</div>
+    <div class="item" draggable="true" data-value="7" style="top: 70%; left: 75%;">7</div>
+    <div class="item" draggable="true" data-value="8" style="top: 50%; left: 20%;">8</div>
+    <div class="item" draggable="true" data-value="9" style="top: 15%; left: 40%;">9</div>
+    <div class="item" draggable="true" data-value="10" style="top: 80%; left: 50%;">10</div>
+
+    <div class="set-zone" id="setA">
+      Conjunto A = {1, 2, 3}<br>¡Arrastra aquí los elementos que pertenezcan!
+      <div class="inside-items" id="insideItems"></div>
+    </div>
+  </div>
+
+  <div style="
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  text-align: center;
+">
+  <button id="check-button" style="
+    background: #00f7ff;
+    color: #000;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: bold;
+    font-size: 16px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 0 10px #00f7ff;
+    cursor: pointer;
+  ">Logrado</button>
+</div>
+
+  <!-- Mensaje animado -->
+  <div id="level-up-message" class="level-up-message">
+    <span id="typing-text"></span>
+  </div>
+
+  <!-- Contenedor de la misión 2 -->
+  <div id="mission-2-container">
+    <h2 style="color:#00f7ff;">🚀 Misión 2: ¡Nueva etapa desbloqueada!</h2>
+    <iframe src="mision2.html"></iframe>
+  </div>
+
+  <canvas id="stars-canvas"></canvas>
+
+  <script>
+    // Estrellas caídas en el fondo
+    const canvas = document.getElementById('stars-canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const stars = [];
+
+    function createStar() {
+      const size = Math.random() * 2 + 0.1;
+      const speed = Math.random() * 1 + 0.3;
+      stars.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size: size,
+        speed: speed
+      });
+    }
+
+    function updateStars() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      stars.forEach((star, index) => {
+        star.y += star.speed;
+        if (star.y > canvas.height) {
+          star.y = 0;
+          star.x = Math.random() * canvas.width;
+        }
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+        ctx.fillStyle = 'white';
+        ctx.fill();
+      });
+    }
+
+    function animateStars() {
+      updateStars();
+      requestAnimationFrame(animateStars);
+    }
+
+    for (let i = 0; i < 100; i++) {
+      createStar();
+    }
+
+    animateStars();
+
+    // Código para el arrastre de objetos y zonas del conjunto
+    const validSet = new Set(["1", "2", "3"]);
+    const insideItems = document.getElementById("insideItems");
+    const gameArea = document.getElementById("game-area");
+
+    document.querySelectorAll(".item").forEach((item) => {
+      item.addEventListener("dragstart", (e) => {
+        e.dataTransfer.setData("text/plain", item.dataset.value);
+      });
+    });
+
+    const setZone = document.getElementById("setA");
+
+    setZone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+    });
+
+    setZone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      const value = e.dataTransfer.getData("text/plain");
+      const draggedItem = [...document.querySelectorAll(".item")].find(
+        (el) => el.dataset.value === value && el.parentElement.id !== "insideItems"
+      );
+
+      if (draggedItem) {
+        if (validSet.has(value)) {
+          draggedItem.style.position = "static";
+          draggedItem.style.margin = "3px";
+          insideItems.appendChild(draggedItem);
+        } else {
+          showIncorrectMessage(draggedItem, `El número ${value} no pertenece al conjunto A.`);
+        }
+      }
+    });
+
+    function showIncorrectMessage(item, message) {
+      const msg = document.createElement("div");
+      msg.className = "incorrect-message";
+      msg.innerText = message;
+      msg.style.top = item.offsetTop - 50 + "px";
+      msg.style.left = item.offsetLeft + "px";
+      gameArea.appendChild(msg);
+      setTimeout(() => msg.remove(), 5000);
+    }
+
+    function checkMissionStatus() {
+      const collected = [...insideItems.querySelectorAll(".item")].map(i => i.dataset.value);
+      return validSet.size === collected.length && collected.every(val => validSet.has(val));
+    }
+
+    function typeMessage(text, elementId, callback) {
+      const el = document.getElementById(elementId);
+      let i = 0;
+      el.innerHTML = "";
+
+      function typeChar() {
+        if (i < text.length) {
+          if (text.charAt(i) === "</br>") {
+            el.innerHTML += "<br>";
+          } else {
+            el.innerHTML += text.charAt(i);
+          }
+          i++;
+          setTimeout(typeChar, 50);
+        } else if (callback) {
+          callback();
+        }
+      }
+
+      typeChar();
+    }
+
+    document.getElementById("check-button").addEventListener("click", () => {
+      const isComplete = checkMissionStatus();
+
+      const existing = document.getElementById("mission-msg");
+      if (existing) existing.remove();
+
+      const msg = document.createElement("div");
+      msg.className = "center-message";
+      msg.innerText = isComplete ? "¡Juego logrado!" : "Aún no has completado la misión correctamente.";
+      gameArea.appendChild(msg);
+
+      if (isComplete) {
+        document.querySelectorAll(".item").forEach(item => item.style.display = "none");
+        document.querySelector(".set-zone").style.display = "none";
+        document.querySelector("h1").style.display = "none";
+        document.getElementById("check-button").style.display = "none";
+
+        document.getElementById("level-up-message").style.display = "block";
+        typeMessage("El nivel de las misiones aumentará para conseguir el objetivo final...", "typing-text", () => {
+          setTimeout(() => {
+            window.location.href = "mision2.html";
+          }, 2000);
+        });
+      }
+    });
+  </script>
+</body>
+</html>
